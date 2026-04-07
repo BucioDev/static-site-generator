@@ -8,7 +8,7 @@ from htmlnode import HTMLNode
 def copy_static_to_public():
     base_dir = os.path.dirname(__file__)
     
-    public_path = os.path.join(base_dir, "..", "public")
+    public_path = os.path.join(base_dir, "..", "docs")
     static_path = os.path.join(base_dir, "..", "static")
     if os.path.exists(public_path) and os.path.exists(static_path):
         print(f"public path {public_path}")
@@ -59,7 +59,7 @@ def extract_title(markdown):
 
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     from_file = open(from_path, "r")
     markdown_content = from_file.read()
@@ -74,6 +74,8 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(markdown_content)
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html)
+    template = template.replace('href="/', f'href="{basepath}')
+    template = template.replace('src="/', f'src="{basepath}')
     
     dest_dir_path = os.path.dirname(dest_path)
     if dest_dir_path != "":
@@ -81,16 +83,16 @@ def generate_page(from_path, template_path, dest_path):
     to_file = open(dest_path, "w")
     to_file.write(template)
     
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     files = os.listdir(dir_path_content)
     for file in files:
         file_path = os.path.join(dir_path_content, file)
         if not os.path.isfile(file_path):
             nested_path = os.path.join(dest_dir_path,file)
             os.mkdir(nested_path)
-            generate_pages_recursive(file_path, template_path, nested_path)
+            generate_pages_recursive(file_path, template_path, nested_path, basepath)
         else:
             index_html = os.path.join(dest_dir_path, "index.html")
-            generate_page(file_path, template_path, index_html)
+            generate_page(file_path, template_path, index_html, basepath)
 
     
